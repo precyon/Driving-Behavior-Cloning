@@ -6,7 +6,9 @@ import matplotlib.image as img
 import cv2
 from  sklearn import model_selection
 from keras import models, optimizers, backend
-from keras.layers import Dense, Flatten, Lambda
+from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D
+
+
 
 settings = {
         'path': '.\data',
@@ -39,6 +41,29 @@ def inputGenerator(dfData):
 def preProcessor(img):
     return (img/255.0) - 0.5
 
+def mLinear():
+    model = models.Sequential()
+    model.add(Lambda(preProcessor, input_shape = settings['shape']))
+    model.add(Flatten())
+    model.add(Dense(1))
+    model.compile(loss='mse', optimizer='adam')
+
+    return model
+
+def mLenet():
+    model = models.Sequential()
+    model.add(Lambda(preProcessor, input_shape = settings['shape']))
+    model.add(Conv2D(6, 5, 5, activation='relu'))
+    model.add(MaxPooling2D())
+    model.add(Conv2D(6, 5, 5, activation='relu'))
+    model.add(MaxPooling2D())
+    model.add(Flatten())
+    model.add(Dense(120))
+    model.add(Dense(84))
+    model.add(Dense(1))
+    model.compile(loss='mse', optimizer='adam')
+
+    return model
 
 if __name__ == '__main__':
 
@@ -47,17 +72,12 @@ if __name__ == '__main__':
 
     dfValid, dfTrain = model_selection.train_test_split(drvData, test_size=-.2)
 
-    model = models.Sequential()
-    model.add(Lambda(preProcessor, input_shape = settings['shape']))
-    model.add(Flatten())
-    model.add(Dense(1))
-
-    model.compile(loss='mse', optimizer='adam')
+    model = mLenet()
 
     trHistory = model.fit_generator(
             inputGenerator(dfTrain),
             samples_per_epoch = dfTrain.shape[0],
-            nb_epoch = 4,
+            nb_epoch = 5,
             validation_data = inputGenerator(dfValid),
             nb_val_samples = dfValid.shape[0]
             )
