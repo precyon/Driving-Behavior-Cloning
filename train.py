@@ -6,7 +6,7 @@ import matplotlib.image as img
 import cv2
 from  sklearn import model_selection
 from keras import models, optimizers, backend
-from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D
+from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D
 
 
 
@@ -53,6 +53,7 @@ def mLinear():
 def mLenet():
     model = models.Sequential()
     model.add(Lambda(preProcessor, input_shape = settings['shape']))
+    model.add(Cropping2D(cropping = ((70, 25), (0, 0))))
     model.add(Conv2D(6, 5, 5, activation='relu'))
     model.add(MaxPooling2D())
     model.add(Conv2D(6, 5, 5, activation='relu'))
