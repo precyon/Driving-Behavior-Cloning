@@ -1,0 +1,14 @@
+data
+bin
+*.exe
+.ipynb_checkpoints
+*.h5
+models
+logs
+*.swp
+*.p
+*.lnk
+commit.bat
+*_template.md
+literature
+__pycache__
