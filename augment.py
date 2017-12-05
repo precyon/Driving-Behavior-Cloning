@@ -5,7 +5,7 @@ import cv2
 # Data augmentation functions
 
 def toss(prob):
-    return np.random.random() <= prob
+    return True if prob == 1 else np.random.random() <= prob
 
 
 def augTranslate(image, xMax, xProb, yMax, yProb):
@@ -28,9 +28,9 @@ def augFlip(image, command, prob):
     return image, command
 
 
-def augBright(image, brMax, prob):
+def augBright(image, brMax, prob, constant = False):
     if toss(prob):
-        brVal = 1 + np.random.random()*2*brMax - brMax
+        brVal = brMax if constant else 1 + np.random.random()*2*brMax - brMax
         hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         h, s, v = cv2.split(hsv)
         v = cv2.multiply(v, np.array([brVal]))
@@ -38,6 +38,26 @@ def augBright(image, brMax, prob):
         hsv = cv2.merge((h, s, v))
         image = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
 
+    return image
+
+def augShadow(image, dimVal, prob):
+    if toss(prob):
+        rows, cols, chan = image.shape
+        # choose a shadow intensity
+        dimImg = augBright(image, dimVal, prob = 1, constant = True)
+        # pick random points from horizontal edges
+        [x1, x2] = np.random.choice(cols, 2, replace=False)
+        m = rows/(x2 - x1)
+        c = - m * x1
+        # construct a mask
+        x = np.mgrid[0:rows, 0:cols][1]
+        y = np.mgrid[0:rows, 0:cols][0]
+        mask = np.zeros((rows, cols), dtype=np.uint8)
+        mask[(m*x + c - y <= 0)] = 1.0
+        # Apply the mask
+        image = mask[:,:,None]*dimImg + (1 - mask[:,:,None])*image
+
+    print(image.shape)
     return image
 
 
@@ -58,7 +78,6 @@ if __name__ == '__main__':
         ax = plt.subplot(sqNum, sqNum, i+1)
         resI, resC = augFlip(img, 5, 0.75)
         resI = np.array(resI)
-        ax.set_title(resC)
         plt.imshow(resI)
         plt.xticks([])
         plt.yticks([])
@@ -84,6 +103,19 @@ if __name__ == '__main__':
     for i in range(sqNum*sqNum):
         ax = plt.subplot(sqNum, sqNum, i+1)
         resI = augTranslate(img, 0.25, 0, 0.25, 1)
+        resI = np.array(resI)
+        plt.imshow(resI)
+        plt.xticks([])
+        plt.yticks([])
+    plt.show()
+
+    # Test shadows
+    fig = plt.figure()
+    fig.canvas.set_window_title('Shadow augmentation')
+    sqNum = 10
+    for i in range(sqNum*sqNum):
+        ax = plt.subplot(sqNum, sqNum, i+1)
+        resI = augShadow(img, 0.5, 0.95)
         resI = np.array(resI)
         plt.imshow(resI)
         plt.xticks([])

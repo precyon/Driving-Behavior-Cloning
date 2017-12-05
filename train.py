@@ -9,7 +9,7 @@ from keras import models, optimizers, backend
 from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D
 
 import modelzoo as zoo
-from augment import augFlip, augBright
+from augment import augFlip, augBright, augShadow
 
 
 settings = {
@@ -27,8 +27,6 @@ def readDataFile():
     dataPath = os.path.join(settings['path'], settings['id'])
     drvData = pd.io.parsers.read_csv(os.path.join(dataPath, 'driving_log.csv'))
     return drvData
-
-
 
 def inputGenerator(dfData, augment=True):
     lenData = dfData.shape[0]
@@ -50,6 +48,9 @@ def inputGenerator(dfData, augment=True):
 
                      # Add random brightness changes
                      image = augBright(image, 0.25, prob = 0.90)
+
+                     # Add shadows
+                     image = augShadow(image, 0.5, prob = 0.80)
 
                      # Randomly translate the image horizontally
 
