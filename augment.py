@@ -5,7 +5,7 @@ import cv2
 # Data augmentation functions
 
 def toss(prob):
-    return True if prob == 1 else np.random.random() <= prob
+    return True if prob == 1 else np.random.random() < prob
 
 
 def augTranslate(image, xMax, xProb, yMax, yProb):
@@ -57,7 +57,6 @@ def augShadow(image, dimVal, prob):
         # Apply the mask
         image = mask[:,:,None]*dimImg + (1 - mask[:,:,None])*image
 
-    print(image.shape)
     return image
 
 
