@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.image as img
 import cv2
-from  sklearn import model_selection
+from sklearn import model_selection
 from keras import models, optimizers, backend
 from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D
 
@@ -15,8 +15,10 @@ settings = {
         'path': '.\data',
         'id': '0',
         'shape': (160, 320, 3),
-        'size': 8036
         }
+
+cameras = ['left', 'center', 'right']
+steering = [0.25, 0, -0.25]
 
 batchSize = 128
 
@@ -33,9 +35,16 @@ def inputGenerator(dfData):
             strData = np.empty([0], dtype=np.float32)
 
             for i in range(bStart, min(bStart + batchSize, lenData)):
-                image = img.imread(os.path.join(settings['path'], settings['id'], dfData['center'].values[i]))
+                # Randomly choose a camera
+                camera = np.random.randint(len(cameras))
+                image = img.imread(os.path.join(settings['path'], settings['id'], dfData[cameras[camera]].values[i].strip()))
                 imgData = np.append(imgData, [image], axis=0)
-                strData = np.append(strData, dfData['steering'].values[i])
+                strData = np.append(strData, dfData['steering'].values[i] + steering[camera])
+
+            # Randomly flip half the images
+            toFlip = np.random.randint(0, imgData.shape[0], int(imgData.shape[0]/2))
+            imgData[toFlip] = imgData[toFlip,:,::-1,:]
+            strData[toFlip] = -1 * strData[toFlip]
 
             yield imgData, strData
 
@@ -49,10 +58,8 @@ if __name__ == '__main__':
 
     dfValid, dfTrain = model_selection.train_test_split(drvData, test_size=-.2)
 
-    #model = mLenet()
-
     zmodel = zoo.mLeNet(input_shape=settings['shape'], preprocessor = preProcessor)
-    zmodel.compile()
+    zmodel.compile(epochs = 3)
     zmodel.train(inputGenerator, dfTrain, dfValid)
     zmodel.save()
 
@@ -64,3 +71,4 @@ if __name__ == '__main__':
 #    plt.xlabel('epoch')
 #    plt.legend(['training set', 'validation set'], loc='upper right')
 #    plt.show()
+

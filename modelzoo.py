@@ -29,6 +29,8 @@ class kModel(object):
         return trHistory
 
     def save(self):
+        if self.model == None:
+            raise Exception("Model not defined")
         self.model.save('model.h5')
         print('Model saved as model.h5')
 
