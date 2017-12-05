@@ -23,7 +23,7 @@ class kModel(object):
                 dataGen(dataTrain),
                 samples_per_epoch = dataTrain.shape[0],
                 nb_epoch = self.epochs,
-                validation_data = dataGen(dataValid),
+                validation_data = dataGen(dataValid, augment=False),
                 nb_val_samples = dataValid.shape[0]
                 )
         return trHistory

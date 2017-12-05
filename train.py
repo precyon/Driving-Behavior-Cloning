@@ -9,6 +9,7 @@ from keras import models, optimizers, backend
 from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D
 
 import modelzoo as zoo
+from augment import augFlip, augBright
 
 
 settings = {
@@ -27,7 +28,9 @@ def readDataFile():
     drvData = pd.io.parsers.read_csv(os.path.join(dataPath, 'driving_log.csv'))
     return drvData
 
-def inputGenerator(dfData):
+
+
+def inputGenerator(dfData, augment=True):
     lenData = dfData.shape[0]
     while True:
         for bStart in range(0, lenData, batchSize):
@@ -36,17 +39,31 @@ def inputGenerator(dfData):
 
             for i in range(bStart, min(bStart + batchSize, lenData)):
                 # Randomly choose a camera
-                camera = np.random.randint(len(cameras))
-                image = img.imread(os.path.join(settings['path'], settings['id'], dfData[cameras[camera]].values[i].strip()))
-                imgData = np.append(imgData, [image], axis=0)
-                strData = np.append(strData, dfData['steering'].values[i] + steering[camera])
+                camera = np.random.randint(len(cameras)) if augment else 1
 
-            # Randomly flip half the images
-            toFlip = np.random.randint(0, imgData.shape[0], int(imgData.shape[0]/2))
-            imgData[toFlip] = imgData[toFlip,:,::-1,:]
-            strData[toFlip] = -1 * strData[toFlip]
+                imgPath = os.path.join(settings['path'], settings['id'], dfData[cameras[camera]].values[i].strip())
+                image = cv2.imread(imgPath)
+                command = dfData['steering'].values[i] + steering[camera]
+
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                if augment:
+
+                     # Add random brightness changes
+                     image = augBright(image, 0.25, prob = 0.90)
+
+                     # Randomly translate the image horizontally
+
+
+                     # Flip the image horizontally
+                     image, command = augFlip(image, command, prob = 0.5)
+
+                # Convert to np.array
+                image = np.array(image)
+                imgData = np.append(imgData, [image], axis=0)
+                strData = np.append(strData, command)
 
             yield imgData, strData
+
 
 def preProcessor(img):
     return (img/255.0) - 0.5
