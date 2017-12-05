@@ -59,6 +59,11 @@ def augShadow(image, dimVal, prob):
 
     return image
 
+def augDrop(command, threshold, prob):
+    """
+    If command < threshold, drop the data with a probability prob
+    """
+    return abs(command) < threshold and toss(1 - prob)
 
 
 

@@ -9,7 +9,7 @@ from keras import models, optimizers, backend
 from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D
 
 import modelzoo as zoo
-from augment import augFlip, augBright, augShadow
+from augment import augFlip, augBright, augShadow, augDrop
 
 
 settings = {
@@ -30,35 +30,70 @@ def readDataFile():
 
 def inputGenerator(dfData, augment=True):
     lenData = dfData.shape[0]
+    imgData = np.zeros([batchSize, 160, 320, 3], dtype=np.float32)
+    strData = np.zeros([batchSize])
+
+    while True:
+
+        # supply the next batch of an appropriate size
+        for i in range(batchSize):
+
+            # Randomly pickup a line from the dataframe till the drop condition is not met
+            while True:
+                line = np.random.randint(lenData)
+                command = dfData['steering'].values[line]
+                if not augDrop(command, threshold=0.15, prob = 0.75):
+                    break
+
+            # Randomly choose a camera, correct the steering command and load the image
+            camera = np.random.randint(len(cameras)) if augment else 1
+            command += steering[camera]
+
+            imgPath = os.path.join(settings['path'], settings['id'], dfData[cameras[camera]].values[line].strip())
+            image = cv2.imread(imgPath)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+            if augment:
+
+                 # Add random brightness changes
+                 image = augBright(image, 0.25, prob = 0.95)
+
+                 # Add shadows
+                 image = augShadow(image, 0.5, prob = 0.80)
+
+                 # Randomly translate the image horizontally
+
+                 # Flip the image horizontally
+                 image, command = augFlip(image, command, prob = 0.5)
+
+                 # Remember the steering command for statistics
+                 # trainedAngles = np.append(trainedAngles, command)
+
+            # Convert to np.array
+            image = np.array(image)
+            imgData[i, :, :, :] = image
+            strData[i] = command
+
+        yield imgData, strData
+
+
+def validationGenerator(dfData):
+    lenData = dfData.shape[0]
     while True:
         for bStart in range(0, lenData, batchSize):
             imgData = np.empty([0, 160, 320, 3], dtype=np.float32)
-            strData = np.empty([0], dtype=np.float32)
+            strData = np.empty([0])
 
             for i in range(bStart, min(bStart + batchSize, lenData)):
                 # Randomly choose a camera
-                camera = np.random.randint(len(cameras)) if augment else 1
+                camera = np.random.randint(len(cameras))
 
+                # Load the image and read the command
                 imgPath = os.path.join(settings['path'], settings['id'], dfData[cameras[camera]].values[i].strip())
                 image = cv2.imread(imgPath)
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 command = dfData['steering'].values[i] + steering[camera]
 
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                if augment:
-
-                     # Add random brightness changes
-                     image = augBright(image, 0.25, prob = 0.90)
-
-                     # Add shadows
-                     image = augShadow(image, 0.5, prob = 0.80)
-
-                     # Randomly translate the image horizontally
-
-
-                     # Flip the image horizontally
-                     image, command = augFlip(image, command, prob = 0.5)
-
-                # Convert to np.array
                 image = np.array(image)
                 imgData = np.append(imgData, [image], axis=0)
                 strData = np.append(strData, command)
@@ -72,13 +107,12 @@ def preProcessor(img):
 if __name__ == '__main__':
 
     drvData = readDataFile()
-    #imgData, strData = readFiles(drvData)
 
-    dfValid, dfTrain = model_selection.train_test_split(drvData, test_size=-.2)
+    dfValid, dfTrain = model_selection.train_test_split(drvData, test_size=-.1)
 
     zmodel = zoo.mLeNet(input_shape=settings['shape'], preprocessor = preProcessor)
-    zmodel.compile(epochs = 3)
-    zmodel.train(inputGenerator, dfTrain, dfValid)
+    zmodel.compile(batchSize, epochs = 3)
+    zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid)
     zmodel.save()
 
 #    # Plot the history
