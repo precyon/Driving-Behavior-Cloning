@@ -55,7 +55,7 @@ def inputGenerator(dfData, augment=True):
             if augment:
 
                  # Add random brightness changes and shadows
-                 image = augBright(image, 0.25, 0.95, shVal=0.5, shProb=0.85)
+                 image = augBright(image, 0.25, 0.95, shVal=0.5, shProb=0)
 
                  # Randomly translate the image horizontally
 
@@ -75,24 +75,26 @@ def inputGenerator(dfData, augment=True):
 
 def validationGenerator(dfData):
     lenData = dfData.shape[0]
+    imgData = np.zeros([batchSize, 160, 320, 3], dtype=np.float32)
+    strData = np.zeros([batchSize])
     while True:
         for bStart in range(0, lenData, batchSize):
-            imgData = np.empty([0, 160, 320, 3], dtype=np.float32)
-            strData = np.empty([0])
 
-            for i in range(bStart, min(bStart + batchSize, lenData)):
+            #for i in range(bStart, min(bStart + batchSize, lenData)):
+            for j in range(batchSize):
                 # Randomly choose a camera
                 camera = np.random.randint(len(cameras))
 
                 # Load the image and read the command
+                i = bStart + j
                 imgPath = os.path.join(settings['path'], settings['id'], dfData[cameras[camera]].values[i].strip())
                 image = cv2.imread(imgPath)
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 command = dfData['steering'].values[i] + steering[camera]
 
                 image = np.array(image)
-                imgData = np.append(imgData, [image], axis=0)
-                strData = np.append(strData, command)
+                imgData[j,:,:,:] = image
+                strData[j] = command
 
             yield imgData, strData
 
@@ -104,7 +106,11 @@ if __name__ == '__main__':
 
     drvData = readDataFile()
 
-    dfValid, dfTrain = model_selection.train_test_split(drvData, test_size=-.1)
+    dfTrain, dfValid = model_selection.train_test_split(drvData,
+            test_size = int(np.floor(drvData.shape[0]*0.2/batchSize)*batchSize)
+            )
+
+    #print(dfValid.shape, dfTrain.shape)
 
     zmodel = zoo.mLeNet(input_shape=settings['shape'], preprocessor = preProcessor)
     zmodel.compile(batchSize, epochs = 3)
