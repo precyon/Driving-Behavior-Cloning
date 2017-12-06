@@ -83,7 +83,7 @@ def augDrop(command, threshold, prob):
     """
     If command < threshold, drop the data with a probability prob
     """
-    return abs(command) < threshold and toss(1 - prob)
+    return abs(command) < threshold and toss(prob)
 
 
 

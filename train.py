@@ -28,7 +28,7 @@ def readDataFile():
     drvData = pd.io.parsers.read_csv(os.path.join(dataPath, 'driving_log.csv'))
     return drvData
 
-def inputGenerator(dfData, augment=True):
+def inputGenerator(dfData, augment=True, callback=None):
     lenData = dfData.shape[0]
     imgData = np.zeros([batchSize, 160, 320, 3], dtype=np.float32)
     strData = np.zeros([batchSize])
@@ -41,7 +41,7 @@ def inputGenerator(dfData, augment=True):
             while True:
                 line = np.random.randint(lenData)
                 command = dfData['steering'].values[line]
-                if not augDrop(command, threshold=0.15, prob = 0.75):
+                if not (augment and augDrop(command, threshold=0.15, prob = 0.05)):
                     break
 
             # Randomly choose a camera, correct the steering command and load the image
@@ -55,20 +55,22 @@ def inputGenerator(dfData, augment=True):
             if augment:
 
                  # Add random brightness changes and shadows
-                 image = augBright(image, 0.25, 0.95, shVal=0.5, shProb=0)
+                 image = augBright(image, 0.25, 0.95, shVal=0.5, shProb=0.5)
 
                  # Randomly translate the image horizontally
 
                  # Flip the image horizontally
-                 image, command = augFlip(image, command, prob = 0.5)
+                image, command = augFlip(image, command, prob = 0.5)
 
-                 # Remember the steering command for statistics
-                 # trainedAngles = np.append(trainedAngles, command)
 
             # Convert to np.array
             image = np.array(image)
             imgData[i, :, :, :] = image
             strData[i] = command
+
+        # Remember the steering command for statistics
+        if callback is not None:
+            callback(strData)
 
         yield imgData, strData
 
@@ -105,18 +107,22 @@ def preProcessor(img):
 if __name__ == '__main__':
 
     drvData = readDataFile()
+    #drvData = drvData.head(1024)
 
     dfTrain, dfValid = model_selection.train_test_split(drvData,
             test_size = int(np.floor(drvData.shape[0]*0.2/batchSize)*batchSize)
             )
 
-    #print(dfValid.shape, dfTrain.shape)
 
     zmodel = zoo.mLeNet(input_shape=settings['shape'], preprocessor = preProcessor)
     zmodel.compile(batchSize, epochs = 3)
     zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid)
     zmodel.save()
 
+    # Plot the logged summary
+    fig = plt.figure
+    plt.hist(zmodel.summary, bins=100)
+    plt.show()
 #    # Plot the history
 #    plt.plot(trHistory.history['loss'])
 #    plt.plot(trHistory.history['val_loss'])

@@ -1,4 +1,5 @@
 import math
+import numpy as np
 from keras import models, optimizers, backend
 from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D
 
@@ -11,11 +12,16 @@ class kModel(object):
     def compile(self, batchSize, learning_rate = 1e-4, epochs = 5, optimizer = 'adam'):
         if self.model == None:
             raise Exception("Model not defined")
+        self.summary = None
+        self.history = None
         self.batchSize = batchSize
         self.learning_rate = learning_rate
         self.epochs = epochs
         self.optimizer = optimizer
         self.model.compile(loss='mse', optimizer=self.optimizer)
+
+    def updateSummary(self, data):
+        self.summary = np.append(self.summary, data)
 
     def train(self, trainingGen, trainingData, validationGen, validationData):
         if self.model == None:
@@ -26,14 +32,15 @@ class kModel(object):
 
         samplesPerEpoch = math.ceil(trainingDataSize/self.batchSize)*self.batchSize
 
-        trHistory = self.model.fit_generator(
-                trainingGen(trainingData),
+        self.summary = np.empty([0])
+        self.history = self.model.fit_generator(
+                trainingGen(trainingData, callback=self.updateSummary),
                 samples_per_epoch = samplesPerEpoch,
                 nb_epoch = self.epochs,
                 validation_data = validationGen(validationData),
                 nb_val_samples = validationDataSize
                 )
-        return trHistory
+
 
     def save(self):
         if self.model == None:
