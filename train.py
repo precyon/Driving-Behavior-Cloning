@@ -9,7 +9,7 @@ from keras import models, optimizers, backend
 from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D
 
 import modelzoo as zoo
-from augment import augFlip, augBright, augShadow, augDrop
+from augment import augFlip, augBright, augDrop
 
 
 settings = {
@@ -34,7 +34,6 @@ def inputGenerator(dfData, augment=True):
     strData = np.zeros([batchSize])
 
     while True:
-
         # supply the next batch of an appropriate size
         for i in range(batchSize):
 
@@ -55,11 +54,8 @@ def inputGenerator(dfData, augment=True):
 
             if augment:
 
-                 # Add random brightness changes
-                 image = augBright(image, 0.25, prob = 0.95)
-
-                 # Add shadows
-                 image = augShadow(image, 0.5, prob = 0.80)
+                 # Add random brightness changes and shadows
+                 image = augBright(image, 0.25, 0.95, shVal=0.5, shProb=0.85)
 
                  # Randomly translate the image horizontally
 
