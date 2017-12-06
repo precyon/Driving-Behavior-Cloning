@@ -107,7 +107,7 @@ def preProcessor(img):
 if __name__ == '__main__':
 
     drvData = readDataFile()
-    #drvData = drvData.head(1024)
+    drvData = drvData.head(1024)
 
     dfTrain, dfValid = model_selection.train_test_split(drvData,
             test_size = int(np.floor(drvData.shape[0]*0.2/batchSize)*batchSize)
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
     zmodel = zoo.mLeNet(input_shape=settings['shape'], preprocessor = preProcessor)
     zmodel.compile(batchSize, epochs = 3)
-    zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid)
+    zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid, augment=True)
     zmodel.save()
 
     # Plot the logged summary

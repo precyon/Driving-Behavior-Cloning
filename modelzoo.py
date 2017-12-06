@@ -23,7 +23,7 @@ class kModel(object):
     def updateSummary(self, data):
         self.summary = np.append(self.summary, data)
 
-    def train(self, trainingGen, trainingData, validationGen, validationData):
+    def train(self, trainingGen, trainingData, validationGen, validationData, augment=True):
         if self.model == None:
             raise Exception("Model not defined")
 
@@ -34,13 +34,12 @@ class kModel(object):
 
         self.summary = np.empty([0])
         self.history = self.model.fit_generator(
-                trainingGen(trainingData, callback=self.updateSummary),
+                trainingGen(trainingData, augment=augment, callback=self.updateSummary),
                 samples_per_epoch = samplesPerEpoch,
                 nb_epoch = self.epochs,
                 validation_data = validationGen(validationData),
                 nb_val_samples = validationDataSize
                 )
-
 
     def save(self):
         if self.model == None:
