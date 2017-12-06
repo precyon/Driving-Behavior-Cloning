@@ -60,7 +60,7 @@ def inputGenerator(dfData, augment=True, callback=None):
                  # Randomly translate the image horizontally
 
                  # Flip the image horizontally
-                image, command = augFlip(image, command, prob = 0.5)
+                 image, command = augFlip(image, command, prob = 0.5)
 
 
             # Convert to np.array
