@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from keras import models, optimizers, backend
-from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D
+from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D, Dropout
 
 
 class kModel(object):
@@ -73,7 +73,9 @@ class mLeNet(kModel):
         model.add(MaxPooling2D())
         model.add(Flatten())
         model.add(Dense(120, activation='relu'))
+        model.add(Dropout(0.5))
         model.add(Dense(84, activation='relu'))
+        model.add(Dropout(0.5))
         model.add(Dense(1))
 
         self.model = model
