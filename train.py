@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
-import matplotlib.image as img
 import cv2
 from sklearn import model_selection
 from keras import models, optimizers, backend
@@ -15,7 +14,8 @@ from augment import augFlip, augBright, augDrop
 settings = {
         'path': '.\data',
         'id': 'Q3RQQS',
-        'shape': (160, 320, 3),
+        'readShape': (160, 320, 3),
+        'preShape': (64,64,3)
         }
 
 cameras = ['left', 'center', 'right']
@@ -45,7 +45,7 @@ def readDataFile():
 
 def inputGenerator(dfData, augment=True, callback=None):
     lenData = dfData.shape[0]
-    imgData = np.zeros([batchSize, 160, 320, 3], dtype=np.float32)
+    imgData = np.zeros([batchSize, *settings['preShape']], dtype=np.float32)
     strData = np.zeros([batchSize])
 
     while True:
@@ -78,6 +78,7 @@ def inputGenerator(dfData, augment=True, callback=None):
                  # Flip the image horizontally
                  image, command = augFlip(image, command, prob = 0.5)
 
+            image = preProcessor(image)
 
             # Convert to np.array
             image = np.array(image)
@@ -93,7 +94,7 @@ def inputGenerator(dfData, augment=True, callback=None):
 
 def validationGenerator(dfData):
     lenData = dfData.shape[0]
-    imgData = np.zeros([batchSize, 160, 320, 3], dtype=np.float32)
+    imgData = np.zeros([batchSize, *settings['preShape']], dtype=np.float32)
     strData = np.zeros([batchSize])
     while True:
         for bStart in range(0, lenData, batchSize):
@@ -108,6 +109,7 @@ def validationGenerator(dfData):
                 imgPath = os.path.join(settings['path'], settings['id'], 'IMG', dfData[cameras[camera]].values[i].strip())
                 image = cv2.imread(imgPath)
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                image = preProcessor(image)
                 command = dfData['steering'].values[i] + steering[camera]
 
                 image = np.array(image)
@@ -118,9 +120,20 @@ def validationGenerator(dfData):
 
 
 def preProcessor(img):
+    # Crop
+    img = img[60:-25,:,:]
+    # Resize
+    img = cv2.resize(img, settings['preShape'][0:2], interpolation = cv2.INTER_AREA)
+    # Normalize and return
     return (img/255.0) - 0.5
 
 if __name__ == '__main__':
+
+    #img = cv2.imread('center_2016_12_01_13_31_13_686.jpg')
+    #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    #plt.imshow(preProcessor(img))
+    #plt.show()
+
 
     drvData = readDataFile()
     #drvData = drvData.head(1024)
@@ -130,7 +143,7 @@ if __name__ == '__main__':
             )
 
 
-    zmodel = zoo.mLeNet(input_shape=settings['shape'], preprocessor = preProcessor)
+    zmodel = zoo.mLeNet(input_shape=settings['preShape'])
     zmodel.compile(batchSize, epochs = 5)
     zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid, augment=True)
     zmodel.save()

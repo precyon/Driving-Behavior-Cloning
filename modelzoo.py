@@ -62,11 +62,12 @@ class mLinear(kModel):
 
 class mLeNet(kModel):
 
-    def __init__(self, input_shape, preprocessor):
+    def __init__(self, input_shape, preprocessor=None):
         # Build the model
         model = models.Sequential()
-        model.add(Lambda(preprocessor, input_shape = input_shape))
-        model.add(Cropping2D(cropping = ((70, 25), (0, 0))))
+        #model.add(Lambda(preprocessor, input_shape = input_shape))
+        #model.add(Cropping2D(cropping = ((70, 25), (0, 0))))
+        model.add(Conv2D(6, 5, 5, input_shape = input_shape, activation='relu'))
         model.add(Conv2D(6, 5, 5, activation='relu'))
         model.add(MaxPooling2D())
         model.add(Conv2D(6, 5, 5, activation='relu'))
