@@ -14,7 +14,7 @@ from augment import augFlip, augBright, augDrop
 
 settings = {
         'path': '.\data',
-        'id': '0',
+        'id': '1',
         'shape': (160, 320, 3),
         }
 
@@ -41,7 +41,7 @@ def inputGenerator(dfData, augment=True, callback=None):
             while True:
                 line = np.random.randint(lenData)
                 command = dfData['steering'].values[line]
-                if not (augment and augDrop(command, threshold=0.15, prob = 0.05)):
+                if not (augment and augDrop(command, threshold=0.1, prob = 0.95)):
                     break
 
             # Randomly choose a camera, correct the steering command and load the image
@@ -55,7 +55,7 @@ def inputGenerator(dfData, augment=True, callback=None):
             if augment:
 
                  # Add random brightness changes and shadows
-                 image = augBright(image, 0.25, 0.95, shVal=0.5, shProb=0.5)
+                 #image = augBright(image, 0.25, 0.95, shVal=0.5, shProb=0.5)
 
                  # Randomly translate the image horizontally
 
@@ -107,15 +107,16 @@ def preProcessor(img):
 if __name__ == '__main__':
 
     drvData = readDataFile()
-    drvData = drvData.head(1024)
+    #drvData = drvData.head(1024)
+    drvData.columns=['center','left','right','steering','throttle','brake','speed']
 
     dfTrain, dfValid = model_selection.train_test_split(drvData,
-            test_size = int(np.floor(drvData.shape[0]*0.2/batchSize)*batchSize)
+            test_size = int(np.floor(drvData.shape[0]*0.25/batchSize)*batchSize)
             )
 
 
     zmodel = zoo.mLeNet(input_shape=settings['shape'], preprocessor = preProcessor)
-    zmodel.compile(batchSize, epochs = 3)
+    zmodel.compile(batchSize, epochs = 5)
     zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid, augment=True)
     zmodel.save()
 
