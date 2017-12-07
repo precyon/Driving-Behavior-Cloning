@@ -72,8 +72,8 @@ class mLeNet(kModel):
         model.add(Conv2D(6, 5, 5, activation='relu'))
         model.add(MaxPooling2D())
         model.add(Flatten())
-        model.add(Dense(120))
-        model.add(Dense(84))
+        model.add(Dense(120, activation='relu'))
+        model.add(Dense(84, activation='relu'))
         model.add(Dense(1))
 
         self.model = model
