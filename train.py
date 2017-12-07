@@ -14,7 +14,7 @@ from augment import augFlip, augBright, augDrop
 
 settings = {
         'path': '.\data',
-        'id': '1',
+        'id': 'Q3RQQS',
         'shape': (160, 320, 3),
         }
 
@@ -23,9 +23,24 @@ steering = [0.25, 0, -0.25]
 
 batchSize = 128
 
+def cleanDataFile(dfData):
+    lenData = dfData.shape[0]
+    dfData.columns=['center','left','right','steering','throttle','brake','speed']
+    for i in range(lenData):
+        for j in range(3):
+            dfData[dfData.columns[j]].values[i] = os.path.basename(dfData[dfData.columns[j]].values[i])
+    return dfData
+
 def readDataFile():
     dataPath = os.path.join(settings['path'], settings['id'])
-    drvData = pd.io.parsers.read_csv(os.path.join(dataPath, 'driving_log.csv'))
+    fPath    = os.path.join(dataPath, 'driving_log_processed.csv')
+    if not os.path.isfile(fPath):
+        drvData = pd.io.parsers.read_csv(os.path.join(dataPath, 'driving_log.csv'))
+        drvData = cleanDataFile(drvData)
+        drvData.to_csv(os.path.join(dataPath, 'driving_log_processed.csv'), index=False)
+    else:
+        drvData = pd.io.parsers.read_csv(os.path.join(dataPath, 'driving_log_processed.csv'))
+
     return drvData
 
 def inputGenerator(dfData, augment=True, callback=None):
@@ -48,8 +63,9 @@ def inputGenerator(dfData, augment=True, callback=None):
             camera = np.random.randint(len(cameras)) if augment else 1
             command += steering[camera]
 
-            imgPath = os.path.join(settings['path'], settings['id'], dfData[cameras[camera]].values[line].strip())
+            imgPath = os.path.join(settings['path'], settings['id'], 'IMG', dfData[cameras[camera]].values[line].strip())
             image = cv2.imread(imgPath)
+
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
             if augment:
@@ -89,7 +105,7 @@ def validationGenerator(dfData):
 
                 # Load the image and read the command
                 i = bStart + j
-                imgPath = os.path.join(settings['path'], settings['id'], dfData[cameras[camera]].values[i].strip())
+                imgPath = os.path.join(settings['path'], settings['id'], 'IMG', dfData[cameras[camera]].values[i].strip())
                 image = cv2.imread(imgPath)
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 command = dfData['steering'].values[i] + steering[camera]
@@ -108,10 +124,9 @@ if __name__ == '__main__':
 
     drvData = readDataFile()
     #drvData = drvData.head(1024)
-    drvData.columns=['center','left','right','steering','throttle','brake','speed']
 
     dfTrain, dfValid = model_selection.train_test_split(drvData,
-            test_size = int(np.floor(drvData.shape[0]*0.25/batchSize)*batchSize)
+            test_size = int(np.floor(drvData.shape[0]*0.15/batchSize)*batchSize)
             )
 
 
