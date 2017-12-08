@@ -8,12 +8,12 @@ from keras import models, optimizers, backend
 from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D
 
 import modelzoo as zoo
-from augment import augFlip, augBright, augDrop
+from augment import augFlip, augBright, augDrop, augTranslate
 
 
 settings = {
         'path': '.\data',
-        'id': 'Q3RQQS',
+        'id': 'VRY8ZS',
         'readShape': (160, 320, 3),
         'preShape': (64,64,3)
         }
@@ -71,9 +71,10 @@ def inputGenerator(dfData, augment=True, callback=None):
             if augment:
 
                  # Add random brightness changes and shadows
-                 #image = augBright(image, 0.25, 0.95, shVal=0.5, shProb=0.5)
+                 # image = augBright(image, 0.25, 0.95)
 
                  # Randomly translate the image horizontally
+                 # image = augTranslate(image, 0, 0, yMax=0.2,yProb=0.8)
 
                  # Flip the image horizontally
                  image, command = augFlip(image, command, prob = 0.5)
@@ -139,7 +140,7 @@ if __name__ == '__main__':
             )
 
 
-    zmodel = zoo.mLeNet(input_shape=settings['readShape'], preprocessor=preProcessor)
+    zmodel = zoo.mComma(input_shape=settings['readShape'], preprocessor=preProcessor)
     zmodel.compile(batchSize, epochs = 5)
     zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid, augment=True)
     zmodel.save()
