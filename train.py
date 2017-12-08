@@ -45,7 +45,7 @@ def readDataFile():
 
 def inputGenerator(dfData, augment=True, callback=None):
     lenData = dfData.shape[0]
-    imgData = np.zeros([batchSize, *settings['preShape']], dtype=np.float32)
+    imgData = np.zeros([batchSize, *settings['readShape']], dtype=np.float32)
     strData = np.zeros([batchSize])
 
     while True:
@@ -78,8 +78,6 @@ def inputGenerator(dfData, augment=True, callback=None):
                  # Flip the image horizontally
                  image, command = augFlip(image, command, prob = 0.5)
 
-            image = preProcessor(image)
-
             # Convert to np.array
             image = np.array(image)
             imgData[i, :, :, :] = image
@@ -94,12 +92,11 @@ def inputGenerator(dfData, augment=True, callback=None):
 
 def validationGenerator(dfData):
     lenData = dfData.shape[0]
-    imgData = np.zeros([batchSize, *settings['preShape']], dtype=np.float32)
+    imgData = np.zeros([batchSize, *settings['readShape']], dtype=np.float32)
     strData = np.zeros([batchSize])
     while True:
         for bStart in range(0, lenData, batchSize):
 
-            #for i in range(bStart, min(bStart + batchSize, lenData)):
             for j in range(batchSize):
                 # Randomly choose a camera
                 camera = np.random.randint(len(cameras))
@@ -109,7 +106,6 @@ def validationGenerator(dfData):
                 imgPath = os.path.join(settings['path'], settings['id'], 'IMG', dfData[cameras[camera]].values[i].strip())
                 image = cv2.imread(imgPath)
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                image = preProcessor(image)
                 command = dfData['steering'].values[i] + steering[camera]
 
                 image = np.array(image)
@@ -121,9 +117,9 @@ def validationGenerator(dfData):
 
 def preProcessor(img):
     # Crop
-    img = img[60:-25,:,:]
+    # img = img[60:-25,:,:]
     # Resize
-    img = cv2.resize(img, settings['preShape'][0:2], interpolation = cv2.INTER_AREA)
+    # img = cv2.resize(img, settings['preShape'][0:2], interpolation = cv2.INTER_AREA)
     # Normalize and return
     return (img/255.0) - 0.5
 
@@ -143,7 +139,7 @@ if __name__ == '__main__':
             )
 
 
-    zmodel = zoo.mLeNet(input_shape=settings['preShape'])
+    zmodel = zoo.mLeNet(input_shape=settings['readShape'], preprocessor=preProcessor)
     zmodel.compile(batchSize, epochs = 5)
     zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid, augment=True)
     zmodel.save()

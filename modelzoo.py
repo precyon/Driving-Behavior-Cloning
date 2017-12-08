@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from keras import models, optimizers, backend
-from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D, Dropout
+from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D, Dropout, ELU
 
 
 class kModel(object):
@@ -53,7 +53,9 @@ class mLinear(kModel):
     def __init__(self, input_shape, preprocessor):
         # Build the model
         model = models.Sequential()
+
         model.add(Lambda(preprocessor, input_shape = input_shape))
+
         model.add(Flatten())
         model.add(Dense(1))
 
@@ -65,9 +67,10 @@ class mLeNet(kModel):
     def __init__(self, input_shape, preprocessor=None):
         # Build the model
         model = models.Sequential()
-        #model.add(Lambda(preprocessor, input_shape = input_shape))
-        #model.add(Cropping2D(cropping = ((70, 25), (0, 0))))
-        model.add(Conv2D(6, 5, 5, input_shape = input_shape, activation='relu'))
+
+        model.add(Lambda(preprocessor, input_shape = input_shape))
+        model.add(Cropping2D(cropping = ((60, 25), (0, 0))))
+
         model.add(Conv2D(6, 5, 5, activation='relu'))
         model.add(MaxPooling2D())
         model.add(Conv2D(6, 5, 5, activation='relu'))
@@ -80,3 +83,27 @@ class mLeNet(kModel):
         model.add(Dense(1))
 
         self.model = model
+
+class mComma(kModel):
+
+    def __init__(self, input_shape, preprocessor=None):
+
+        model = models.Sequential()
+
+        model.add(Lambda(preprocessor, input_shape = input_shape))
+        model.add(Cropping2D(cropping = ((60, 25), (0, 0))))
+
+        model.add(Conv2D(16, 8, 8, subsample=(4, 4), border_mode="same", activation='elu'))
+        model.add(Conv2D(32, 5, 5, subsample=(2, 2), border_mode="same", activation='elu'))
+        model.add(Conv2D(64, 5, 5, subsample=(2, 2), border_mode="same", activation='elu'))
+        model.add(Flatten())
+        model.add(Dropout(.2))
+        #model.add(ELU())
+        model.add(Dense(512, activation='elu'))
+        model.add(Dropout(.5))
+        #model.add(ELU())
+        model.add(Dense(1))
+
+        self.model = model
+
+
