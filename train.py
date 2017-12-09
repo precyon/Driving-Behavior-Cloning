@@ -13,7 +13,7 @@ from augment import augFlip, augBright, augDrop, augTranslate
 
 settings = {
         'path': '.\data',
-        'id': 'VRY8ZS',
+        'id': 'VRY8ZT',
         'readShape': (160, 320, 3),
         'preShape': (64,64,3)
         }
@@ -56,11 +56,12 @@ def inputGenerator(dfData, augment=True, callback=None):
             while True:
                 line = np.random.randint(lenData)
                 command = dfData['steering'].values[line]
-                if not (augment and augDrop(command, threshold=0.1, prob = 0.95)):
+                if not (augment and augDrop(command, threshold=0.1, prob = 0.975)):
                     break
 
             # Randomly choose a camera, correct the steering command and load the image
             camera = np.random.randint(len(cameras)) if augment else 1
+            #camera = 1
             command += steering[camera]
 
             imgPath = os.path.join(settings['path'], settings['id'], 'IMG', dfData[cameras[camera]].values[line].strip())
@@ -71,10 +72,10 @@ def inputGenerator(dfData, augment=True, callback=None):
             if augment:
 
                  # Add random brightness changes and shadows
-                 # image = augBright(image, 0.25, 0.95)
+                 image = augBright(image, 0.20, 0.95)
 
                  # Randomly translate the image horizontally
-                 # image = augTranslate(image, 0, 0, yMax=0.2,yProb=0.8)
+                 image = augTranslate(image, 0, 0, yMax=0.15,yProb=0.5)
 
                  # Flip the image horizontally
                  image, command = augFlip(image, command, prob = 0.5)
@@ -141,7 +142,7 @@ if __name__ == '__main__':
 
 
     zmodel = zoo.mComma(input_shape=settings['readShape'], preprocessor=preProcessor)
-    zmodel.compile(batchSize, epochs = 5)
+    zmodel.compile(batchSize, epochs = 7)
     zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid, augment=True)
     zmodel.save()
 

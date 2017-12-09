@@ -1,8 +1,12 @@
 import math
 import numpy as np
+import tensorflow as tf
 from keras import models, optimizers, backend
 from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D, Dropout, ELU
 
+
+def atan(x):
+    return tf.atan(x)
 
 class kModel(object):
 
@@ -97,13 +101,10 @@ class mComma(kModel):
         model.add(Conv2D(32, 5, 5, subsample=(2, 2), border_mode="same", activation='elu'))
         model.add(Conv2D(64, 5, 5, subsample=(2, 2), border_mode="same", activation='elu'))
         model.add(Flatten())
-        model.add(Dropout(.2))
-        #model.add(ELU())
+        model.add(Dropout(.3))
         model.add(Dense(512, activation='elu'))
         model.add(Dropout(.5))
-        #model.add(ELU())
         model.add(Dense(1))
 
         self.model = model
-
 
