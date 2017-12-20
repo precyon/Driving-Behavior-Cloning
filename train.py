@@ -144,15 +144,17 @@ if __name__ == '__main__':
             )
 
 
-    zmodel = zoo.mLeNet(input_shape=settings['preShape'], preprocessor=preProcessor)
-    zmodel.compile(batchSize, epochs = 7)
+    zmodel = zoo.mSmall(input_shape=settings['preShape'], preprocessor=preProcessor)
+    zmodel.compile(batchSize, epochs = 5)
     zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid, augment=True)
     zmodel.save()
 
+    zmodel.summary()
+
     # Plot the logged summary
-    fig = plt.figure
-    plt.hist(zmodel.log, bins=100)
-    plt.show()
+    #fig = plt.figure
+    #plt.hist(zmodel.log, bins=100)
+    #plt.show()
 #    # Plot the history
 #    plt.plot(trHistory.history['loss'])
 #    plt.plot(trHistory.history['val_loss'])

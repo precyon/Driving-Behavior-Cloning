@@ -45,6 +45,9 @@ class kModel(object):
                 nb_val_samples = validationDataSize
                 )
 
+    def summary(self):
+        self.model.summary()
+
     def save(self):
         if self.model == None:
             raise Exception("Model not defined")
@@ -73,18 +76,40 @@ class mLeNet(kModel):
         # Build the model
         model = models.Sequential()
 
-        model.add(Lambda(lambda x: (x/255 - 0.5)*2, input_shape = input_shape))
+        model.add(Lambda(lambda x: (x/255 - 0.5)*2, input_shape = input_shape,
+                name='Normalize'))
 
-        model.add(Conv2D(6, 5, 5, activation='relu'))
-        model.add(MaxPooling2D())
-        model.add(Conv2D(6, 5, 5, activation='relu'))
-        model.add(MaxPooling2D())
-        model.add(Flatten())
-        model.add(Dense(120, activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(84, activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(1))
+        model.add(Conv2D(6, 5, 5, activation='relu', name='Conv'))
+        model.add(MaxPooling2D( name='MaxPool'))
+        model.add(Flatten( name='Flatten'))
+        model.add(Dense(120, activation='relu', name='Dense1'))
+        model.add(Dropout(0.5, name='Dropout1'))
+        model.add(Dense(84, activation='relu', name='Dense2'))
+        model.add(Dropout(0.5, name='Dropout2'))
+        model.add(Dense(1, name='Output'))
+
+        self.model = model
+
+class mSmall(kModel):
+
+
+    def __init__(self, input_shape, preprocessor=None):
+        # Build the model
+        model = models.Sequential()
+
+        model.add(Lambda(lambda x: (x/255 - 0.5)*2, input_shape = input_shape,
+                name='Normalize'))
+
+        model.add(Conv2D(6, 5, 5, activation='elu', name='Conv'))
+        model.add(MaxPooling2D( name='MaxPool'))
+        #model.add(Conv2D(6, 5, 5, activation='relu'))
+        #model.add(MaxPooling2D())
+        model.add(Flatten( name='Flatten'))
+        #model.add(Dense(120, activation='relu'))
+        model.add(Dropout(0.5, name='Dropout'))
+        #model.add(Dense(8, activation='elu'))
+        #model.add(Dropout(0.5))
+        model.add(Dense(1, name ='Output'))
 
         self.model = model
 
