@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 from keras import models, optimizers, backend
 from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D, Dropout, ELU
-
+from keras.backend import tf as ktf
 
 def atan(x):
     return tf.atan(x)
@@ -16,7 +16,7 @@ class kModel(object):
     def compile(self, batchSize, learning_rate = 1e-4, epochs = 5, optimizer = 'adam'):
         if self.model == None:
             raise Exception("Model not defined")
-        self.summary = None
+        self.log = None
         self.history = None
         self.batchSize = batchSize
         self.learning_rate = learning_rate
@@ -25,7 +25,7 @@ class kModel(object):
         self.model.compile(loss='mse', optimizer=self.optimizer)
 
     def updateSummary(self, data):
-        self.summary = np.append(self.summary, data)
+        self.log = np.append(self.log, data)
 
     def train(self, trainingGen, trainingData, validationGen, validationData, augment=True):
         if self.model == None:
@@ -36,7 +36,7 @@ class kModel(object):
 
         samplesPerEpoch = math.ceil(trainingDataSize/self.batchSize)*self.batchSize
 
-        self.summary = np.empty([0])
+        self.log = np.empty([0])
         self.history = self.model.fit_generator(
                 trainingGen(trainingData, augment=augment, callback=self.updateSummary),
                 samples_per_epoch = samplesPerEpoch,
@@ -68,12 +68,12 @@ class mLinear(kModel):
 
 class mLeNet(kModel):
 
+
     def __init__(self, input_shape, preprocessor=None):
         # Build the model
         model = models.Sequential()
 
-        model.add(Lambda(preprocessor, input_shape = input_shape))
-        model.add(Cropping2D(cropping = ((60, 25), (0, 0))))
+        model.add(Lambda(lambda x: (x/255 - 0.5)*2, input_shape = input_shape))
 
         model.add(Conv2D(6, 5, 5, activation='relu'))
         model.add(MaxPooling2D())
@@ -94,8 +94,7 @@ class mComma(kModel):
 
         model = models.Sequential()
 
-        model.add(Lambda(preprocessor, input_shape = input_shape))
-        model.add(Cropping2D(cropping = ((60, 25), (0, 0))))
+        model.add(Lambda(lambda x: (x/255 - 0.5)*2, input_shape = input_shape))
 
         model.add(Conv2D(16, 8, 8, subsample=(4, 4), border_mode="same", activation='elu'))
         model.add(Conv2D(32, 5, 5, subsample=(2, 2), border_mode="same", activation='elu'))
@@ -107,4 +106,5 @@ class mComma(kModel):
         model.add(Dense(1))
 
         self.model = model
+
 

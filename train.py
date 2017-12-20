@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import cv2
 from sklearn import model_selection
 from keras import models, optimizers, backend
@@ -45,7 +46,7 @@ def readDataFile():
 
 def inputGenerator(dfData, augment=True, callback=None):
     lenData = dfData.shape[0]
-    imgData = np.zeros([batchSize, *settings['readShape']], dtype=np.float32)
+    imgData = np.zeros([batchSize, *settings['preShape']], dtype=np.float32)
     strData = np.zeros([batchSize])
 
     while True:
@@ -61,18 +62,17 @@ def inputGenerator(dfData, augment=True, callback=None):
 
             # Randomly choose a camera, correct the steering command and load the image
             camera = np.random.randint(len(cameras)) if augment else 1
-            #camera = 1
             command += steering[camera]
 
             imgPath = os.path.join(settings['path'], settings['id'], 'IMG', dfData[cameras[camera]].values[line].strip())
-            image = cv2.imread(imgPath)
-
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image = mpimg.imread(imgPath)
+            image = preProcessor(image)
+            #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
             if augment:
 
                  # Add random brightness changes and shadows
-                 image = augBright(image, 0.20, 0.95)
+                 #image = augBright(image, 0.20, 0.95)
 
                  # Randomly translate the image horizontally
                  image = augTranslate(image, 0, 0, yMax=0.15,yProb=0.5)
@@ -94,7 +94,7 @@ def inputGenerator(dfData, augment=True, callback=None):
 
 def validationGenerator(dfData):
     lenData = dfData.shape[0]
-    imgData = np.zeros([batchSize, *settings['readShape']], dtype=np.float32)
+    imgData = np.zeros([batchSize, *settings['preShape']], dtype=np.float32)
     strData = np.zeros([batchSize])
     while True:
         for bStart in range(0, lenData, batchSize):
@@ -106,8 +106,8 @@ def validationGenerator(dfData):
                 # Load the image and read the command
                 i = bStart + j
                 imgPath = os.path.join(settings['path'], settings['id'], 'IMG', dfData[cameras[camera]].values[i].strip())
-                image = cv2.imread(imgPath)
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                image = mpimg.imread(imgPath)
+                image = preProcessor(image)
                 command = dfData['steering'].values[i] + steering[camera]
 
                 image = np.array(image)
@@ -119,11 +119,14 @@ def validationGenerator(dfData):
 
 def preProcessor(img):
     # Crop
-    # img = img[60:-25,:,:]
+    img = img[60:-25,:,:]
     # Resize
-    # img = cv2.resize(img, settings['preShape'][0:2], interpolation = cv2.INTER_AREA)
+    #print(type(img))
+    #print(img.shape)
+    #img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)[:,:,1]
+    img = cv2.resize(img, settings['preShape'][0:2], interpolation = cv2.INTER_AREA)
     # Normalize and return
-    return (img/255.0) - 0.5
+    return img #(img/255.0) - 0.5
 
 if __name__ == '__main__':
 
@@ -141,14 +144,14 @@ if __name__ == '__main__':
             )
 
 
-    zmodel = zoo.mComma(input_shape=settings['readShape'], preprocessor=preProcessor)
+    zmodel = zoo.mLeNet(input_shape=settings['preShape'], preprocessor=preProcessor)
     zmodel.compile(batchSize, epochs = 7)
     zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid, augment=True)
     zmodel.save()
 
     # Plot the logged summary
     fig = plt.figure
-    plt.hist(zmodel.summary, bins=100)
+    plt.hist(zmodel.log, bins=100)
     plt.show()
 #    # Plot the history
 #    plt.plot(trHistory.history['loss'])

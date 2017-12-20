@@ -14,7 +14,7 @@ def toss(prob):
 
 
 def augTranslate(image, xMax, xProb, yMax, yProb):
-    rows, cols, _ = image.shape
+    rows, cols = image.shape[:2]
     xMax, yMax = int(xMax*cols), int(yMax*rows)
     xTrans = np.random.randint(-xMax,xMax) if toss(xProb) else 0
     yTrans = np.random.randint(-yMax,yMax) if toss(yProb) else 0
@@ -56,11 +56,15 @@ def _brighten(vdata, factor):
 
 def augBright(image, brMax, brProb, shVal=0, shProb=0):
 
+    img2d = (image.ndim == 2)
     toBr, toSh = toss(brProb), toss(shProb)
 
     if toBr or toSh:
-        hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        h, s, v = cv2.split(hsv)
+        if img2d:
+            v = image
+        else:
+            hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+            h, s, v = cv2.split(hsv)
 
         if toBr:
             brVal = 1 + np.random.random()*2*brMax - brMax
@@ -70,8 +74,11 @@ def augBright(image, brMax, brProb, shVal=0, shProb=0):
             mask = _genRandomShadowMask(image.shape)
             v = mask*_brighten(v, 1-shVal) + (1-mask)*v
 
-        hsv = cv2.merge((h, s, v))
-        image = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
+        if img2d:
+            image = v
+        else:
+            hsv = cv2.merge((h, s, v))
+            image = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
 
         return image
 
