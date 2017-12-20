@@ -16,7 +16,7 @@ settings = {
         'path': '.\data',
         'id': 'VRY8ZT',
         'readShape': (160, 320, 3),
-        'preShape': (64,64,3)
+        'preShape': (64,64,1)
         }
 
 cameras = ['left', 'center', 'right']
@@ -46,7 +46,7 @@ def readDataFile():
 
 def inputGenerator(dfData, augment=True, callback=None):
     lenData = dfData.shape[0]
-    imgData = np.zeros([batchSize, *settings['preShape']], dtype=np.float32)
+    imgData = np.zeros([batchSize, *settings['preShape'],], dtype=np.float32)
     strData = np.zeros([batchSize])
 
     while True:
@@ -67,12 +67,11 @@ def inputGenerator(dfData, augment=True, callback=None):
             imgPath = os.path.join(settings['path'], settings['id'], 'IMG', dfData[cameras[camera]].values[line].strip())
             image = mpimg.imread(imgPath)
             image = preProcessor(image)
-            #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
             if augment:
 
                  # Add random brightness changes and shadows
-                 #image = augBright(image, 0.20, 0.95)
+                 image = augBright(image, 0.20, 0.95)
 
                  # Randomly translate the image horizontally
                  image = augTranslate(image, 0, 0, yMax=0.15,yProb=0.5)
@@ -81,8 +80,8 @@ def inputGenerator(dfData, augment=True, callback=None):
                  image, command = augFlip(image, command, prob = 0.5)
 
             # Convert to np.array
-            image = np.array(image)
-            imgData[i, :, :, :] = image
+            # image = np.array(image)
+            imgData[i, ...] = np.reshape(image, settings['preShape'])
             strData[i] = command
 
         # Remember the steering command for statistics
@@ -110,8 +109,9 @@ def validationGenerator(dfData):
                 image = preProcessor(image)
                 command = dfData['steering'].values[i] + steering[camera]
 
-                image = np.array(image)
-                imgData[j,:,:,:] = image
+                #image = np.array(image)
+                imgData[j, ...] = np.reshape(image, settings['preShape'])
+                #imgData[j,:,:,:] = image
                 strData[j] = command
 
             yield imgData, strData
@@ -123,7 +123,7 @@ def preProcessor(img):
     # Resize
     #print(type(img))
     #print(img.shape)
-    #img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)[:,:,1]
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)[:,:,1]
     img = cv2.resize(img, settings['preShape'][0:2], interpolation = cv2.INTER_AREA)
     # Normalize and return
     return img #(img/255.0) - 0.5
