@@ -127,4 +127,26 @@ class mComma(kModel):
 
         self.model = model
 
+class mNvidia(kModel):
+
+    def __init__(self, input_shape, preprocessor=None):
+
+        model = models.Sequential()
+
+        model.add(Lambda(lambda x: (x/255 - 0.5)*2, input_shape = input_shape))
+
+        model.add(Conv2D(24,5,5,border_mode='valid', activation='relu', subsample=(2,2)))
+        model.add(Conv2D(36,5,5,border_mode='valid', activation='relu', subsample=(2,2)))
+        model.add(Conv2D(48,5,5,border_mode='valid', activation='relu', subsample=(2,2)))
+        model.add(Conv2D(64,3,3,border_mode='valid', activation='relu', subsample=(1,1)))
+        model.add(Conv2D(64,3,3,border_mode='valid', activation='relu', subsample=(1,1)))
+        model.add(Flatten())
+        model.add(Dense(1164, activation='relu'))
+        model.add(Dense(100, activation='relu'))
+        model.add(Dense(50, activation='relu'))
+        model.add(Dense(10, activation='relu'))
+        model.add(Dense(1, activation='tanh'))
+
+        self.model = model
+
 
