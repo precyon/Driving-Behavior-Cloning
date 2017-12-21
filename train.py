@@ -153,6 +153,7 @@ if __name__ == '__main__':
     zmodel.save()
 
     zmodel.summary()
+    zmodel.saveplot()
 
     #weights = zmodel.model.get_weights()
     ##print([len(l) for l in weights])

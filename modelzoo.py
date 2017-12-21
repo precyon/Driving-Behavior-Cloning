@@ -4,6 +4,7 @@ import tensorflow as tf
 from keras import models, optimizers, backend
 from keras.layers import Dense, Flatten, Lambda, Conv2D, MaxPooling2D, Cropping2D, Dropout, ELU
 from keras.backend import tf as ktf
+import keras.utils.visualize_util as kvis
 
 def atan(x):
     return tf.atan(x)
@@ -47,6 +48,9 @@ class kModel(object):
 
     def summary(self):
         self.model.summary()
+
+    def saveplot(self, path='model.png'):
+        kvis.plot(self.model, to_file='model.png', show_shapes=True, show_layer_names=False)
 
     def save(self):
         if self.model == None:
