@@ -165,14 +165,19 @@ if __name__ == '__main__':
 
     # Plot the logged summary
     #fig = plt.figure
-    #plt.hist(zmodel.log, bins=100)
+    #plt.hist(zmodel.log, bins=20, facecolor='g', alpha=0.75)
+    #plt.xlabel('Steering commands')
+    #plt.ylabel('Frequency')
+    #plt.grid(True)
+    #plt.savefig('images/histraw.png')
     #plt.show()
-#    # Plot the history
-#    plt.plot(trHistory.history['loss'])
-#    plt.plot(trHistory.history['val_loss'])
-#    plt.title('model mean squared error loss')
-#    plt.ylabel('mean squared error loss')
-#    plt.xlabel('epoch')
-#    plt.legend(['training set', 'validation set'], loc='upper right')
-#    plt.show()
+
+    # Plot the history
+    #plt.plot(trHistory.history['loss'])
+    #plt.plot(trHistory.history['val_loss'])
+    #plt.title('model mean squared error loss')
+    #plt.ylabel('mean squared error loss')
+    #plt.xlabel('epoch')
+    #plt.legend(['training set', 'validation set'], loc='upper right')
+    #plt.show()
 
