@@ -100,15 +100,10 @@ class mSmall(kModel):
         model.add(Lambda(lambda x: (x/255 - 0.5)*2, input_shape = input_shape,
                 name='Normalize'))
 
-        model.add(Conv2D(6, 5, 5, activation='elu', name='Conv'))
+        model.add(Conv2D(3, 5, 5, activation='elu', name='Conv'))
         model.add(MaxPooling2D( name='MaxPool'))
-        #model.add(Conv2D(6, 5, 5, activation='relu'))
-        #model.add(MaxPooling2D())
         model.add(Flatten( name='Flatten'))
-        #model.add(Dense(120, activation='relu'))
         model.add(Dropout(0.5, name='Dropout'))
-        #model.add(Dense(8, activation='elu'))
-        #model.add(Dropout(0.5))
         model.add(Dense(1, name ='Output'))
 
         self.model = model

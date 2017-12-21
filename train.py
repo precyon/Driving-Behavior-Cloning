@@ -16,7 +16,7 @@ settings = {
         'path': '.\data',
         'id': 'VRY8ZT',
         'readShape': (160, 320, 3),
-        'preShape': (64,64,1)
+        'preShape': (32,64,1)
         }
 
 cameras = ['left', 'center', 'right']
@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
 
     drvData = readDataFile()
-    #drvData = drvData.head(1024)
+    # drvData = drvData.head(1024)
 
     dfTrain, dfValid = model_selection.train_test_split(drvData,
             test_size = int(np.floor(drvData.shape[0]*0.15/batchSize)*batchSize)
@@ -150,6 +150,13 @@ if __name__ == '__main__':
     zmodel.save()
 
     zmodel.summary()
+
+    #weights = zmodel.model.get_weights()
+    ##print([len(l) for l in weights])
+    #w = np.reshape(weights[2], (14,30,6))
+    #ws = np.sum(w, axis=2)
+    #plt.imshow(ws/np.max(ws))
+    #plt.show()
 
     # Plot the logged summary
     #fig = plt.figure
