@@ -72,8 +72,8 @@ class mLinear(kModel):
 class mLeNet(kModel):
 
 
-    def __init__(self, input_shape, preprocessor=None):
-        # Build the model
+    def __init__(self, input_shape):
+
         model = models.Sequential()
 
         model.add(Lambda(lambda x: (x/255 - 0.5)*2, input_shape = input_shape,
@@ -92,9 +92,8 @@ class mLeNet(kModel):
 
 class mSmall(kModel):
 
+    def __init__(self, input_shape):
 
-    def __init__(self, input_shape, preprocessor=None):
-        # Build the model
         model = models.Sequential()
 
         model.add(Lambda(lambda x: (x/255 - 0.5)*2, input_shape = input_shape,
@@ -108,10 +107,11 @@ class mSmall(kModel):
 
         self.model = model
 
+
 class mComma(kModel):
 
-    def __init__(self, input_shape, preprocessor=None):
-
+    def __init__(self, input_shape):
+        # Model from https://github.com/commaai/research/blob/master/train_steering_model.py
         model = models.Sequential()
 
         model.add(Lambda(lambda x: (x/255 - 0.5)*2, input_shape = input_shape))
@@ -129,8 +129,8 @@ class mComma(kModel):
 
 class mNvidia(kModel):
 
-    def __init__(self, input_shape, preprocessor=None):
-
+    def __init__(self, input_shape):
+        # Model from https://github.com/0bserver07/Nvidia-Autopilot-Keras/blob/master/model.py
         model = models.Sequential()
 
         model.add(Lambda(lambda x: (x/255 - 0.5)*2, input_shape = input_shape))

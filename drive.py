@@ -62,13 +62,13 @@ def telemetry(sid, data):
         # The current image from the center camera of the car
         imgString = data["image"]
         image = Image.open(BytesIO(base64.b64decode(imgString)))
-        image_array = np.asarray(image)
-        image_array = np.reshape(preProcessor(image_array), settings['preShape'])
-        steering_angle = float(model.predict(image_array[None, ...], batch_size=1))
+        image = np.asarray(image)
+        preImage = np.reshape(preProcessor(image), settings['preShape'])
+        print(preProcessor(image).shape)
+        steering_angle = float(model.predict(preImage[None, ...], batch_size=1))
 
         throttle = controller.update(float(speed))
 
-        #print('%+04.2f, %+04.2f' % (steering_angle, throttle))
         send_control(steering_angle, throttle)
 
         # save frame
@@ -122,7 +122,6 @@ if __name__ == '__main__':
         print('You are using Keras version ', keras_version,
               ', but the model was built using ', model_version)
 
-    #model = load_model(args.model, custom_objects = {'preProcessor': preProcessor})
     model = load_model(args.model)
 
     if args.image_folder != '':

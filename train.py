@@ -124,7 +124,10 @@ def preProcessor(img):
     #print(type(img))
     #print(img.shape)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)[:,:,1]
-    img = cv2.resize(img, settings['preShape'][0:2], interpolation = cv2.INTER_AREA)
+    img = cv2.resize(img,
+                     settings['preShape'][:2][::-1],
+                     interpolation = cv2.INTER_AREA)
+    # print(img.shape)
     # Normalize and return
     return img #(img/255.0) - 0.5
 
@@ -144,7 +147,7 @@ if __name__ == '__main__':
             )
 
 
-    zmodel = zoo.mSmall(input_shape=settings['preShape'], preprocessor=preProcessor)
+    zmodel = zoo.mSmall(input_shape=settings['preShape'])
     zmodel.compile(batchSize, epochs = 5)
     zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid, augment=True)
     zmodel.save()
