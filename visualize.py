@@ -28,8 +28,9 @@ def activations(img):
     overlay = (overlay*255).astype(np.uint8)
     overimg = np.zeros(img.shape[:2], dtype=np.uint8)
     overimg[60:-25,:] = overlay
-    overimg = cv2.applyColorMap(overimg, cv2.COLORMAP_JET)
+    overimg[(overimg > 75) & (overimg < 160) ] = 0
 
+    overimg = cv2.applyColorMap(overimg, cv2.COLORMAP_JET)
     result = cv2.addWeighted(overimg, 0.5, img, 0.5, 0)
 
     return result

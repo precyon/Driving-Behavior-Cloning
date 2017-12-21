@@ -149,10 +149,11 @@ if __name__ == '__main__':
 
     zmodel = zoo.mSmall(input_shape=settings['preShape'])
     zmodel.compile(batchSize, epochs = 5)
+    zmodel.summary()
+
     zmodel.train(inputGenerator, dfTrain, validationGenerator, dfValid, augment=True)
     zmodel.save()
 
-    zmodel.summary()
     zmodel.saveplot()
 
     #weights = zmodel.model.get_weights()
