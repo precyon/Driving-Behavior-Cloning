@@ -30,6 +30,9 @@ The project includes the following files:
 * ```augment.py``` functions for our data augmentation pipeline
 * ```visualize.py``` to visualize network activations 
 * This file, ```writeup.md```, summarizing the results
+* The driving output [run.mp4](models/run.mp4)
+* Activations visualized [visualize.mp4](models/visualize.mp4)
+
 
 #### Usage
 
@@ -136,7 +139,7 @@ The model used an adam optimizer, so the learning rate was not tuned manually. T
 
 ### Performance and analysis
 
-The video of the model driving on track 1 is available [here](./models/run.mp4) and the saved model is available [here]('./models/model.h5)
+The model drives very well on track 1 at even at an increased speed of 20. The video is available [here](./models/run.mp4) and the saved model is available [here](./models/model.h5)
 
 While our model worked very well for track 1, it did not work well for certain points on track 2. Our analysis is the following, although we did not the time and resources at hand to implement the suggestions.
 1. Track 2 has sharper curves of the magnitude not encountered in the training data. So a few laps of training with track 2 data will help. 
@@ -150,7 +153,7 @@ However, this is one advantage of a small as small as ours. It is easier to not 
 3) Element-wise multiply the output with the weights to create a "contributions matrix" that represents the amount each pixel contributes to the final steering command.
 4) Resize this contributions matrix to the input image size and overlay it on the input. The resulting image gives a visualization of both positive and negative contributions by pixels in the image. 
 
-Following is a small subclip of the full video. The full visualization is [here]('models/visualize.mp4').
+Following is a small subclip of the full video. The full visualization is [here](models/visualize.mp4).
 
 ![alt text][image6]
 
