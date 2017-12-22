@@ -72,7 +72,7 @@ The ```augment.augDrop(thres, prob)``` helps drop images with steering command s
 2. **Use left, center and right camera images**
 For each image in the batch, a random camera is chosen and the corresponding steering angle is correction for being "off-center". This is not physically accurate but works when the data is this scarce. 
 3. **Random flips**
-Each image is randomly flipped horizontally with a settable probability and its steering command is negated. The function ```augment.augFlip`` is the implementation. 
+Each image is randomly flipped horizontally with a settable probability and its steering command is negated. The function ```augment.augFlip``` is the implementation. 
 4. **Random brightness transform**
 The function ```augment.augBright``` is used to brighten or dim the image by a factor chosen randomly from a uniform distribution. 
 5. **Random x and y translations**
@@ -92,7 +92,7 @@ A lot of model architectures were attempted for this project. These networks hav
 
 Though all of them worked for this task, our particular case is much simpler than real world driving that nVidia and comma.ai models are designed for. For this reason and considering training resources available, we sought a smaller and simpler model with a focus on track 1 performance.
 
-We started with a working modification of the LeNet-5 model, implemented as ```mLeNet``` in ```modelzoo.py``` simplifying it. The following though processes was used,
+We started with a working modification of the LeNet-5 model, implemented as ```mLeNet``` in ```modelzoo.py``` simplifying it. The following thought processes was used,
 1. Experimentation showed grayscale models worked as well as colour images for this task. We therefore used a single channel input to our model. The S channel in the HSV colorspace performed the best.
 2. Full uncropped images required more dense layers. Cropping the top and bottom parts of the images to select only the road not only helped reduce the input size but also allowed removing some dense layers.
 3. One the dense part of the network was smaller it was much easier to visualize the activation of the convolutional layer. With that as a guide, we reduced the number of filters in that layer.   
